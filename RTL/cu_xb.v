@@ -1,5 +1,5 @@
 module crossbar #(parameter DATA_WIDTH, ADDRESS_WIDTH, SIGNAL_WIDTH)
-		( 
+		(input  wire clk_dcd, ps_xb_stall,
 		
 		input wire[(SIGNAL_WIDTH-1):0] ps_xb_w_cuEn,
 
@@ -18,11 +18,18 @@ module crossbar #(parameter DATA_WIDTH, ADDRESS_WIDTH, SIGNAL_WIDTH)
 		);
 	
 	wire x,y;
+	reg[(ADDRESS_WIDTH-1):0] ps_xb_wadd_p;
+	reg ps_xb_stall_p;
+
+always @(posedge clk_dcd) begin
+	ps_xb_stall_p<=ps_xb_stall;
+	ps_xb_wadd_p<=ps_xb_wadd;	
+end
 
 	wire cuEn=ps_xb_w_cuEn[0]|ps_xb_w_cuEn[1]|ps_xb_w_cuEn[2];
 
-	assign x=(ps_xb_raddx==ps_xb_wadd);
-	assign y=(ps_xb_raddy==ps_xb_wadd);
+	assign x=((ps_xb_raddx==ps_xb_wadd)&ps_xb_stall_p&ps_xb_stall)|((ps_xb_raddx==ps_xb_wadd_p)&(~ps_xb_stall_p)&ps_xb_stall);
+	assign y=((ps_xb_raddy==ps_xb_wadd)&ps_xb_stall_p&ps_xb_stall)|((ps_xb_raddy==ps_xb_wadd_p)&(~ps_xb_stall_p)&ps_xb_stall);
 
 
 always@(*)
