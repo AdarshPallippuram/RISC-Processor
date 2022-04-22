@@ -6,7 +6,7 @@ module memory #(parameter
            `endif
                     PMA_SIZE=3, PMD_SIZE=8, DMA_SIZE=3, DMD_SIZE=4)
 			(
-				input wire clk, reset,
+				input wire clk_fetch,clk_dcd,clk_rf, reset,
 				input wire ps_pm_cslt, ps_dm_cslt,
 				input wire[PMA_SIZE-1:0] ps_pm_add,
 				//input wire[PMD_SIZE-1:0] pmDataIn, (future scope)
@@ -74,7 +74,7 @@ module memory #(parameter
         end
 `endif
 
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_fetch or negedge reset)
 		if(~reset)
 			pm_ps_op<=0;
 		else
@@ -108,8 +108,8 @@ module memory #(parameter
 		//Initially open and close to clear the DM file
 		initial
 		begin
-			file=$fopen(DM_LOCATE,"w");
-			$fclose(file);
+			/*file=$fopen(DM_LOCATE,"w");
+			$fclose(file);*/
 		end
 	
 	//Comment above initial block if you want to access DM data present in data memory before startup.
@@ -132,7 +132,7 @@ module memory #(parameter
 		
 
 		//DM reading
-		always@(posedge clk)
+		always@(posedge clk_dcd)
 		begin
 			if(ps_dm_cslt)
 			begin
@@ -144,7 +144,7 @@ module memory #(parameter
 		end
 		
 		//control signal latching for writing purpose only (Write to memory at execute+1 cycle)
-		always@(posedge clk)
+		always@(posedge clk_dcd)
 		begin
 			dm_cslt <= ps_dm_cslt;
 			dm_wrb <= ps_dm_wrb;
@@ -152,7 +152,7 @@ module memory #(parameter
 		end
 
 		//DM writing
-		always@(posedge clk )
+		always@(posedge clk_rf )
 		begin
 			if(dm_cslt)
 			begin
