@@ -77,7 +77,7 @@ def assembler(INST_LOCATE):
     g.close()
     return 1
 def comple():
-    comp= subprocess.run("vlog BUSCONNECT_top.v CORE_top.v cu_alu.v cu_mul.v cu_mul_rnd.v cu_mul_sat.v cu_rf.v cu_shf.v CU_top.v cu_xb.v DAG_top.v MEM_top.v ps_bc_select_control.v ps_cmpt_decode.v ps_cond_decode.v PS_top.v ps_ureg_inst_dcd.v test_core.v", capture_output=True, text=True)
+    comp= subprocess.run("vlog BUSCONNECT_top.v clock_in.v CORE_top.v cu_alu.v cu_mul.v cu_mul_rnd.v cu_mul_sat.v cu_rf.v cu_shf.v CU_top.v cu_xb.v DAG_top.v MEM_top.v ps_bc_select_control.v ps_cmpt_decode.v ps_cond_decode.v PS_top.v ps_ureg_inst_dcd.v test_core.v", capture_output=True, text=True)
     error=(comp.stdout).replace(' ', '').replace('\t','').replace('\n','').strip()
     if(error.find('Errors:0')==-1):
         return 0
