@@ -12,7 +12,7 @@ module multiplier
 				input wire[1:0] ps_mul_cls, ps_mul_sc,
 				
 				//universal signals
-				input wire clk, reset,
+				input wire clk_exe, reset,
 
 				//flags
 				output wire mul_ps_mv, mul_ps_mn
@@ -23,7 +23,7 @@ module multiplier
 		reg mul_en, mul_otreg;
 		reg mul_rndPrdt, mul_IbF, mul_rxUbS, mul_ryUbS;		//mul_dtsts[3:0]
 		reg[1:0] mul_cls, mul_sc;
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_exe or negedge reset)
 		begin 
 			if(~reset)
 			begin
@@ -32,7 +32,7 @@ module multiplier
 			else
 				mul_en <= ps_mul_en;
 		end	
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_exe or negedge reset)
 		begin
 		    if(~reset)
 		    begin
@@ -66,7 +66,7 @@ module multiplier
 		
 	//latch Rx and Ry at entry of multiplier to use data only in execute
 	//=======================================================================================
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_exe or negedge reset)
 		begin
 			if(~reset)
 			begin
@@ -77,7 +77,7 @@ module multiplier
 					Ry16_latched <= xb_dty;
 		end
 
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_exe or negedge reset)
 		begin
 		    if(~reset)
 		    begin
@@ -214,7 +214,7 @@ module multiplier
 
 	//MR write logic
 	//=======================================================================
-		always@(posedge clk or negedge reset)
+		always@(posedge clk_exe or negedge reset)
 		begin
 			if(~reset)
 				mr40_data<=40'h0;		//reset mr so that at reset, mul_cls=00 -> mv flag doesn't go to x
@@ -304,7 +304,7 @@ endmodule
 	
 	module test_cu_mul();
 	
-	reg reset, clk;
+	reg reset, clk_exe;
 	wire [15:0] mul_out;
 
 	reg ps_mul_en, ps_mul_otreg;
@@ -323,7 +323,7 @@ endmodule
 				ps_mul_cls,
 				
 				//universal signals
-				clk, reset,
+				clk_exe, reset,
 
 				//flags
 				mul_ps_mv, 
@@ -339,11 +339,11 @@ endmodule
 
 	initial
 	begin
-		clk=0;
+		clk_exe=0;
 		#10
-		clk=1;
+		clk_exe=1;
 		forever begin
-			#5 clk=~clk;
+			#5 clk_exe=~clk_exe;
 		end
 	end
 
@@ -351,7 +351,7 @@ endmodule
 		if(~reset)
 			ps_mul_en<=1'b0;		//PS supplies enable=0 on reset. This is required condition!
 
-	always@(posedge clk)
+	always@(posedge clk_exe)
 	//if(~reset)
 		begin
 			#5
