@@ -1,7 +1,7 @@
 //@nd May
-module BC_top(clk,ps_bc_drr_sclt, ps_bc_di_sclt,dm_bc_dt, dg_bc_dt, ps_bc_dt, xb_dtx, ps_bc_immdt,bc_dt);
+module BC_top(clk_dcd,ps_bc_drr_sclt, ps_bc_di_sclt,dm_bc_dt, dg_bc_dt, ps_bc_dt, xb_dtx, ps_bc_immdt,bc_dt);
 
-input clk;
+input clk_dcd;
 input[1:0] ps_bc_drr_sclt, ps_bc_di_sclt;
 input[15:0] dm_bc_dt, dg_bc_dt, ps_bc_dt, xb_dtx, ps_bc_immdt;
 output[15:0] bc_dt;
@@ -23,7 +23,7 @@ always @(*) begin
 
 end
 
-always @ (posedge clk) begin
+always @ (posedge clk_dcd) begin
 
 	bc_pdrdt<= ps_bc_drr_dt;
 
