@@ -2,7 +2,7 @@
 module regfile #(parameter DATA_WIDTH, ADDRESS_WIDTH, SIGNAL_WIDTH)
 			( 
 			
-			input wire clk,  xb_rf_w_En, 
+			input wire clk_rf,  xb_rf_w_En, 
 			
 			input wire [(ADDRESS_WIDTH-1):0]ps_xb_wadd,  ps_xb_raddx,  ps_xb_raddy,
 			
@@ -16,7 +16,7 @@ reg[(DATA_WIDTH-1):0]regfile[(2**ADDRESS_WIDTH-1):0];
 
 
 
-always@(posedge clk)
+always@(posedge clk_rf)
 begin
 	if(xb_rf_w_En)
 	begin
