@@ -1,8 +1,8 @@
 //3 June
-module PS_top (clk,clk_fetch,rst,interrupt,shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_ps_az,alu_ps_compd,pm_ps_op,bc_dt,ps_pm_cslt,ps_pm_wrb,ps_pm_add,ps_cu_float,ps_alu_en,ps_mul_en,ps_shf_en,ps_alu_log,ps_mul_otreg,ps_alu_ci,ps_alu_sat,ps_alu_hc,ps_mul_cls,ps_mul_sc,ps_shf_cls,ps_alu_sc,ps_mul_dtsts,ps_xb_raddy,ps_xb_w_cuEn,ps_xb_wadd,ps_xb_raddx,ps_xb_w_bcEn,ps_dg_wrt_en,ps_dg_rd_add,ps_dg_wrt_add,ps_bc_immdt,ps_dm_cslt,ps_dm_wrb,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_iadd,ps_dg_madd,ps_bc_drr_slct,ps_bc_di_slct,ps_bc_dt,dg_ps_add);
+module PS_top (clk_fetch,clk_dcd,clk_exe,clk_rf,rst,interrupt,shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_ps_az,alu_ps_compd,pm_ps_op,bc_dt,ps_pm_cslt,ps_pm_wrb,ps_pm_add,ps_cu_float,ps_alu_en,ps_mul_en,ps_shf_en,ps_alu_log,ps_mul_otreg,ps_alu_ci,ps_alu_sat,ps_alu_hc,ps_mul_cls,ps_mul_sc,ps_shf_cls,ps_alu_sc,ps_mul_dtsts,ps_xb_raddy,ps_xb_w_cuEn,ps_xb_wadd,ps_xb_raddx,ps_xb_w_bcEn,ps_dg_wrt_en,ps_dg_rd_add,ps_dg_wrt_add,ps_bc_immdt,ps_dm_cslt,ps_dm_wrb,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_iadd,ps_dg_madd,ps_bc_drr_slct,ps_bc_di_slct,ps_bc_dt,dg_ps_add);
 
 
-input clk,clk_fetch,rst,interrupt;
+input clk_fetch,clk_dcd,clk_exe,clk_rf,rst,interrupt;
 input shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_ps_az,alu_ps_compd; 
 input[31:0] pm_ps_op;
 input[15:0] bc_dt;
@@ -86,20 +86,19 @@ reg[2:0] ps_dg_iadd,ps_dg_madd;
 
 
 //Compute Decoing hardware
-cmpt_inst_dcdr cpt(clk,rst,cpt_en,pm_ps_op[26],pm_ps_op[25:5], ps_alu_en,ps_mul_en, ps_shf_en, ps_cu_float, ps_alu_log, ps_mul_otreg, ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls, ps_alu_sc, ps_xb_w_cuEn,ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy, ps_xb_wrt_a);
+cmpt_inst_dcdr cpt(clk_dcd,rst,cpt_en,pm_ps_op[26],pm_ps_op[25:5], ps_alu_en,ps_mul_en, ps_shf_en, ps_cu_float, ps_alu_log, ps_mul_otreg, ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls, ps_alu_sc, ps_xb_w_cuEn,ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy, ps_xb_wrt_a);
 
 //Condition decoding hardware
 cnd_dcdr cnd(cnd_en,opc_cnd,cnd_stat,astat_bts);
 
 //Ureg related decoding hardware
-ureg_add_dcdr urdcd(clk,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
+ureg_add_dcdr urdcd(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
 
 //Bus connect selection logic
-bc_slct_cntrl bsc(clk,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add[7:4],ps_ureg2_add[7:4],ps_bc_drr_slct,ps_bc_di_slct);
+bc_slct_cntrl bsc(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add[7:4],ps_ureg2_add[7:4],ps_bc_drr_slct,ps_bc_di_slct);
 
 
-always @ (posedge clk_fetch or negedge rst) begin 
-	
+always @ (posedge clk_fetch or negedge rst) begin
 	if(!rst) begin
 		ps_faddr <=16'b0;
 		ps_call <= 1'b0;
@@ -124,16 +123,14 @@ always @ (posedge clk_fetch or negedge rst) begin
 		end
 
 	end
-
 end
 
-always@(posedge clk) begin
+always@(posedge clk_dcd) begin
 
 	dg_ps_add_dly<=dg_ps_add;
 
 	if(!ps_idle & !ps_stcky[2]) begin
 		ps_daddr <= ps_faddr;
-		ps_pc <= ps_daddr;
 	end
 
 	//RF write address muxing
@@ -148,7 +145,43 @@ always@(posedge clk) begin
 		ps_bc_immdt<=pm_ps_op[15:0];
 	end
 
-end		
+end
+
+always @(posedge clk_exe) begin
+    if(!ps_idle & !ps_stcky[2]) begin
+		ps_pc <= ps_daddr;
+	end
+end
+
+always @(posedge clk_rf or negedge rst) begin
+	if(!rst) begin
+
+		ps_stcky<=3'b001;						//ps_stcky[0] -> empty flag, ps_stcky[1] -> full flag, ps_stcky[2] -> pc sctack overflow
+		ps_pcstck_pntr<= 1'b0;
+		ps_pshstck_dly<= 1'b0;
+		ps_popstck_dly<= 1'b0;
+
+	end else begin
+
+		ps_pshstck_dly<= ps_pshstck;
+		ps_popstck_dly<= ps_popstck;
+
+		if( (ps_popstck_dly | ps_rtrn) & !ps_stcky[0]) begin	
+			ps_pcstck_pntr<=ps_pcstck_pntr-1'b1;
+		end else if( (ps_pshstck_dly | ps_call) & !ps_stcky[1]) begin
+			ps_pcstck_pntr<=ps_pcstck_pntr+1'b1;
+		end
+
+		ps_stcky[0]<= (ps_stcky[1] & (ps_popstck_dly | ps_rtrn)) | (ps_stcky[0] & !(ps_pshstck_dly | ps_call));
+		ps_stcky[1]<= (ps_stcky[0] & (ps_pshstck_dly | ps_call)) | (ps_stcky[1] & !(ps_popstck_dly | ps_rtrn));
+		ps_stcky[2]<= (ps_stcky[1] & (ps_pshstck_dly | ps_call)) | ps_stcky[2];
+
+	end
+
+end
+
+	
+
 
 always @(*) begin
 
@@ -245,36 +278,8 @@ always @(*) begin
 
 end
 
-//PC stackpntr and sticky registers
-always@(posedge clk or negedge rst) begin					//For the time being, a write using ureg to either pcstck pntr or sticky reg is not promoted and is invalid due to accompanied possible complications
 
-	if(!rst) begin
-
-		ps_stcky<=3'b001;						//ps_stcky[0] -> empty flag, ps_stcky[1] -> full flag, ps_stcky[2] -> pc sctack overflow
-		ps_pcstck_pntr<= 1'b0;
-		ps_pshstck_dly<= 1'b0;
-		ps_popstck_dly<= 1'b0;
-
-	end else begin
-
-		ps_pshstck_dly<= ps_pshstck;
-		ps_popstck_dly<= ps_popstck;
-
-		if( (ps_popstck_dly | ps_rtrn) & !ps_stcky[0]) begin	
-			ps_pcstck_pntr<=ps_pcstck_pntr-1'b1;
-		end else if( (ps_pshstck_dly | ps_call) & !ps_stcky[1]) begin
-			ps_pcstck_pntr<=ps_pcstck_pntr+1'b1;
-		end
-
-		ps_stcky[0]<= (ps_stcky[1] & (ps_popstck_dly | ps_rtrn)) | (ps_stcky[0] & !(ps_pshstck_dly | ps_call));
-		ps_stcky[1]<= (ps_stcky[0] & (ps_pshstck_dly | ps_call)) | (ps_stcky[1] & !(ps_popstck_dly | ps_rtrn));
-		ps_stcky[2]<= (ps_stcky[1] & (ps_pshstck_dly | ps_call)) | ps_stcky[2];
-
-	end
-
-end
-
-always@(posedge clk or negedge rst) begin
+always@(posedge clk_rf or negedge rst) begin
 
 	if(!rst) begin
 
@@ -293,7 +298,7 @@ always@(posedge clk or negedge rst) begin
 end
 
 //Internal Registers - ASTAT, MODE1, PCSTK
-always@(posedge clk or negedge rst) begin
+always@(posedge clk_rf or negedge rst) begin
 
 	if(!rst) begin
 
