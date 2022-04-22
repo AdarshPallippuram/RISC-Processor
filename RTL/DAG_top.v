@@ -56,9 +56,9 @@ end
 
 endmodule
 
-module DAG_top(clk,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,dg_dm_add,dg_ps_add,ps_dg_iadd,ps_dg_madd,bc_dt,ps_dg_wrt_en,dg_bc_dt,ps_dg_wrt_add,ps_dg_rd_add);
+module DAG_top(clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,dg_dm_add,dg_ps_add,ps_dg_iadd,ps_dg_madd,bc_dt,ps_dg_wrt_en,dg_bc_dt,ps_dg_wrt_add,ps_dg_rd_add);
 
-input clk,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_wrt_en;
+input clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_wrt_en;
 input[2:0] ps_dg_iadd,ps_dg_madd;
 input[4:0] ps_dg_wrt_add,ps_dg_rd_add;
 input [15:0] bc_dt;
@@ -90,7 +90,7 @@ always@(*) begin
 
 end
 
-always@(posedge clk) begin
+always@(posedge clk_rf) begin
 
 	for(y=0;y<16;y=y+1) begin
 		if(dg_wrt_en[y]) begin
