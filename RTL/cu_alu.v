@@ -1,9 +1,9 @@
 //Synthesised RTL
 module alu #(parameter DATA_WIDTH=16)
-	(clk, reset, xb_dtx, xb_dty, ps_alu_en, ps_alu_log, ps_alu_hc, ps_alu_sc, alu_xb_dt, ps_alu_sat, ps_alu_ci, alu_ps_az, alu_ps_an, alu_ps_ac, alu_ps_av, alu_ps_compd);
+	(clk_exe, reset, xb_dtx, xb_dty, ps_alu_en, ps_alu_log, ps_alu_hc, ps_alu_sc, alu_xb_dt, ps_alu_sat, ps_alu_ci, alu_ps_az, alu_ps_an, alu_ps_ac, alu_ps_av, alu_ps_compd);
 
-input clk, reset, xb_dtx, xb_dty ,ps_alu_en, ps_alu_log, ps_alu_sat, ps_alu_hc, ps_alu_sc, ps_alu_ci;
-wire clk, reset, ps_alu_ci;                  
+input clk_exe, reset, xb_dtx, xb_dty ,ps_alu_en, ps_alu_log, ps_alu_sat, ps_alu_hc, ps_alu_sc, ps_alu_ci;
+wire clk_exe, reset, ps_alu_ci;                  
 wire [(DATA_WIDTH-1):0]xb_dtx;
 wire [(DATA_WIDTH-1):0]xb_dty;
 wire ps_alu_en, ps_alu_log;
@@ -29,7 +29,7 @@ wire satEn;
 reg [DATA_WIDTH-1:0] a, b;
 wire [DATA_WIDTH-1:0] sum, cout;
 
-always@(posedge clk or negedge reset)
+always@(posedge clk_exe or negedge reset)
 begin
 	if(~reset)
 	      	alu_en = 1'b0;
@@ -37,7 +37,7 @@ begin
 		alu_en <= ps_alu_en; 
 end
 
-always@(posedge clk or negedge reset)
+always@(posedge clk_exe or negedge reset)
 begin
 	if(~reset)
 	begin
@@ -55,7 +55,7 @@ begin
 end
 
 
-always@(posedge clk or negedge reset)
+always@(posedge clk_exe or negedge reset)
 begin
         if(~reset)
 	begin
@@ -156,7 +156,7 @@ begin
 	end
 end
 
-always@(posedge clk or negedge reset)
+always@(posedge clk_exe or negedge reset)
 begin
 	if(~reset)
 		alu_sat<=0;
@@ -225,7 +225,7 @@ endmodule
 
 
 /*module afinalbench #(parameter DATA_WIDTH=16)();
-reg  clk;
+reg  clk_exe;
 reg reset;
 reg  [DATA_WIDTH-1:0] xb_dtx;
 reg  [DATA_WIDTH-1:0] xb_dty;
@@ -249,14 +249,14 @@ wire [2:0]alu_sc;
 wire signed [DATA_WIDTH-1:0]alu_xb_dt;
 
 
-alu_final aft_bench(clk, reset, xb_dtx, xb_dty, ps_alu_en, ps_alu_log, ps_alu_hc, ps_alu_sc, alu_xb_dt, ps_alu_sat, alu_ps_az, alu_ps_an, alu_ps_ac, alu_ps_av);
+alu_final aft_bench(clk_exe, reset, xb_dtx, xb_dty, ps_alu_en, ps_alu_log, ps_alu_hc, ps_alu_sc, alu_xb_dt, ps_alu_sat, alu_ps_az, alu_ps_an, alu_ps_ac, alu_ps_av);
 
 
 
 initial begin
-clk=1;
+clk_exe=1;
 forever begin
-#5 clk=~clk;
+#5 clk_exe=~clk_exe;
 end
 end 
 
@@ -383,7 +383,7 @@ endmodule */
 //-----------------------------------------------------------------------------ALU HARDWARE MODULE-------------------------------------------------------------------------------------------
 //***************************************************************
 
-//Control Signals :clk
+//Control Signals :clk_exe
 //                :reset
 //	          :ps_alu_en
 //                :ps_alu_log
