@@ -32,8 +32,8 @@ end
 initial begin
 	stallb_en=1;
 	forever begin
-		#10 stallb_en=0;
-		#20 stallb_en=1;
+		#9 stallb_en=0;
+		#32 stallb_en=1;
 	end
 end
 
@@ -76,7 +76,7 @@ always@(*) begin
 		end
 		$write("\n");
 		#50;
-		/////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
+		//////////////////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
 		#50;
 		$stop;
 	end
