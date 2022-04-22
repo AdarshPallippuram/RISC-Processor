@@ -1,7 +1,7 @@
 //6th May 7:36 PM reset added
 module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 		(
-			input wire clk, reset,
+			input wire clk_exe,clk_rf,clk_dcd, reset, stall,
 				
 			//Multiplier control signals input from PS
 			input wire ps_mul_en, ps_mul_otreg,
@@ -49,7 +49,7 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 	wire [RF_DATASIZE-1:0] xb_rf_dt, alu_xb_dt, shf_xb_dt, mul_xb_dt, rf_xb_dtx, rf_xb_dty;
 	
 	crossbar #(.DATA_WIDTH(RF_DATASIZE), .ADDRESS_WIDTH(ADDRESS_WIDTH), .SIGNAL_WIDTH(SIGNAL_WIDTH)) xb_obj
-		(
+		(	clk_dcd, stall,
 			ps_xb_w_cuEn, ps_xb_w_bcEn,
 			ps_xb_wadd, ps_xb_raddx, ps_xb_raddy,
 			bc_dt, alu_xb_dt, shf_xb_dt, mul_xb_dt, rf_xb_dtx, rf_xb_dty,
@@ -61,7 +61,7 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 
 	regfile #(.DATA_WIDTH(RF_DATASIZE), .ADDRESS_WIDTH(ADDRESS_WIDTH), .SIGNAL_WIDTH(SIGNAL_WIDTH)) rf_obj
 			( 
-				clk, xb_rf_w_En, 
+				clk_rf, xb_rf_w_En, 
 				ps_xb_wadd,  ps_xb_raddx,  ps_xb_raddy,
 				xb_rf_dt,
 				rf_xb_dtx, rf_xb_dty
@@ -74,7 +74,7 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 				ps_mul_en, ps_mul_otreg,
 				ps_mul_dtsts,
 				ps_mul_cls, ps_mul_sc,
-				clk, reset,
+				clk_exe, reset,
 				mul_ps_mv,
 				mul_ps_mn
 			);	
@@ -82,7 +82,7 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 			
 	shifter #(.DATASIZE(RF_DATASIZE)) shf_obj
 			(
-				clk, reset,
+				clk_exe, reset,
 				ps_shf_en, ps_shf_cls, 
 				xb_dtx, xb_dty, 
 				shf_xb_dt, shf_ps_sv, shf_ps_sz
@@ -90,7 +90,7 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 
 	alu #(.DATA_WIDTH(RF_DATASIZE)) alu_obj
 			(
-				clk, reset,
+				clk_exe, reset,
 				xb_dtx, xb_dty, 
 				ps_alu_en, ps_alu_log, ps_alu_hc, ps_alu_sc, 
 				alu_xb_dt, 
