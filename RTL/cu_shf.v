@@ -1,10 +1,10 @@
 
 
-module shifter #(parameter DATASIZE = 16)(clk, reset, ps_shf_en, ps_shf_cls, xb_dtx, xb_dty, shf_xb_dt, shf_ps_sv, shf_ps_sz);
+module shifter #(parameter DATASIZE = 16)(clk_exe, reset, ps_shf_en, ps_shf_cls, xb_dtx, xb_dty, shf_xb_dt, shf_ps_sv, shf_ps_sz);
 
 
 
-input wire reset, clk;
+input wire reset, clk_exe;
 input wire ps_shf_en;
 input wire [1:0]ps_shf_cls;
 input wire [DATASIZE-1:0]xb_dtx;
@@ -149,7 +149,7 @@ begin
 	
 end
 
-always@(posedge clk or negedge reset)
+always@(posedge clk_exe or negedge reset)
 begin
 	if(~reset)
 	begin
@@ -179,22 +179,22 @@ endmodule
 module test_shifter#(parameter DATASIZE = 16)();
 
 
-reg reset, clk, ps_shf_en;
+reg reset, clk_exe, ps_shf_en;
 reg [1:0]ps_shf_cls;
 reg [DATASIZE-1:0]xb_dtx, xb_dty;
 wire[DATASIZE-1:0]shf_xb_dt;
 wire shf_ps_sv, shf_ps_sz;
 
 
-shifter shf_obj(clk, reset, ps_shf_en, ps_shf_cls, xb_dtx, xb_dty, shf_xb_dt, shf_ps_sv, shf_ps_sz);
+shifter shf_obj(clk_exe, reset, ps_shf_en, ps_shf_cls, xb_dtx, xb_dty, shf_xb_dt, shf_ps_sv, shf_ps_sz);
 
 
 initial
 begin
-	clk=1;
+	clk_exe=1;
 	forever
 	begin
-		#5 clk=~clk;
+		#5 clk_exe=~clk_exe;
 	end
 end
 
