@@ -1,6 +1,6 @@
-module bc_slct_cntrl(clk,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_bc_drr_slct,ps_bc_di_slct);
+module bc_slct_cntrl(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_bc_drr_slct,ps_bc_di_slct);
 
-input clk,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
+input clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
 input[3:0] ps_ureg1_add,ps_ureg2_add;
 output[1:0] ps_bc_drr_slct,ps_bc_di_slct;
 
@@ -58,7 +58,7 @@ always @(*) begin
 
 end
 
-always @ (posedge clk) begin
+always @ (posedge clk_dcd) begin
 
 	ps_bc_di_slct<= ps_di_slct;
 
