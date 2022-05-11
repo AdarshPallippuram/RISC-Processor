@@ -8,10 +8,10 @@ assign clk_exe=en_ff_3&clk_in;
 assign clk_rf=en_ff_4&clk_in;
 always @(negedge clk_in or negedge rst) begin
     if(!rst) begin
-        en_ff_1<=0;
-        en_ff_2<=0;
-        en_ff_3<=0;
-        en_ff_4<=0;
+        en_ff_1<=1;
+        en_ff_2<=1;
+        en_ff_3<=1;
+        en_ff_4<=1;
     end
     else begin
         en_ff_1<=stallb_en;
