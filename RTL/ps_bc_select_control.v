@@ -1,6 +1,6 @@
-module bc_slct_cntrl(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_bc_drr_slct,ps_bc_di_slct);
+module bc_slct_cntrl(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dmimminst,ps_dmiaddinst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_bc_drr_slct,ps_bc_di_slct);
 
-input clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
+input clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dmimminst,ps_dmiaddinst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
 input[3:0] ps_ureg1_add,ps_ureg2_add;
 output[1:0] ps_bc_drr_slct,ps_bc_di_slct;
 
@@ -8,7 +8,7 @@ reg[1:0] ps_di_slct,ps_bc_drr_slct,ps_bc_di_slct;
 
 always @(*) begin
 
-	if(ps_imminst) begin
+	if(ps_imminst|ps_dmimminst) begin
 
 		ps_di_slct= 2'b10;
 		ps_bc_drr_slct= 2'b11;
@@ -18,12 +18,12 @@ always @(*) begin
 		ps_di_slct= 2'b01;
 		ps_bc_drr_slct= 2'b01;
 
-	end else if(ps_dminst & !ps_dm_wrb) begin
+	end else if((ps_dminst | ps_dmiaddinst) & !ps_dm_wrb) begin
 
 		ps_bc_drr_slct= 2'b11;   
 		ps_di_slct= 2'b00;
 
-	end else if((ps_dminst & ps_dm_wrb) | ps_pshstck) begin
+	end else if(((ps_dminst | ps_dmiaddinst) & ps_dm_wrb) | ps_pshstck) begin
 
 		if(ps_ureg1_add==4'h0) begin
 			ps_bc_drr_slct= 2'b10;	
