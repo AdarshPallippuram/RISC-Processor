@@ -4,13 +4,13 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 				input wire clk,
 				input wire reset,
 				input wire interrupt,
-				input wire stallb_en
+				input wire stallb
 			);
 
 		
 		//clock signal generator for stall
 		wire clk_fetch, clk_dcd, clk_exe,clk_rf;
-		stall_clk stall(clk,stallb_en,reset,clk_fetch, clk_dcd, clk_exe,clk_rf);
+		stall_clk stall(clk,stallb,reset,clk_fetch, clk_dcd, clk_exe,clk_rf);
 
 
 		//Multiplier control signals input from PS
@@ -46,10 +46,10 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 
 		cu_top #(.RF_DATASIZE(RF_DATASIZE), .ADDRESS_WIDTH(ADDRESS_WIDTH), .SIGNAL_WIDTH(SIGNAL_WIDTH))
 			cu_obj	(
-					clk_exe,clk_rf,clk_dcd, reset, stallb_en,
+					clk_exe,clk_rf,clk_dcd, reset, stallb,
 
 					//Floating Signal
-					ps_cu_float
+					ps_cu_float,
 				
 					//Multiplier control signals input from PS
 					ps_mul_en, ps_mul_otreg,
@@ -139,11 +139,10 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 				dg_dm_add, dg_ps_add, ps_dg_iadd, ps_dg_madd, bc_dt, ps_dg_wrt_en, 
 				dg_bc_dt, ps_dg_wrt_add, ps_dg_rd_add
 			);
-		
-		
+		//PS
 		PS_top ps_obj
 				(
-					clk_fetch,clk_dcd,clk_exe,clk_rf, reset,interrupt,
+					clk_fetch,clk_dcd,clk_exe,clk_rf, reset,interrupt,stallb,
 					
 					//flags
 					shf_ps_sz , shf_ps_sv,
