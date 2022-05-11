@@ -1,7 +1,10 @@
 //6th May 7:36 PM reset added
 module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 		(
-			input wire clk_exe,clk_rf,clk_dcd, reset, stall,
+			input wire clk_exe,clk_rf,clk_dcd, reset, stallb,
+
+			//Float Signal
+			input wire ps_cu_float,
 				
 			//Multiplier control signals input from PS
 			input wire ps_mul_en, ps_mul_otreg,
@@ -49,7 +52,9 @@ module cu_top 	#(parameter RF_DATASIZE, ADDRESS_WIDTH, SIGNAL_WIDTH)
 	wire [RF_DATASIZE-1:0] xb_rf_dt, alu_xb_dt, shf_xb_dt, mul_xb_dt, rf_xb_dtx, rf_xb_dty;
 	
 	crossbar #(.DATA_WIDTH(RF_DATASIZE), .ADDRESS_WIDTH(ADDRESS_WIDTH), .SIGNAL_WIDTH(SIGNAL_WIDTH)) xb_obj
-		(	clk_dcd, stall,
+		(	clk_dcd, stallb,
+
+		
 			ps_xb_w_cuEn, ps_xb_w_bcEn,
 			ps_xb_wadd, ps_xb_raddx, ps_xb_raddy,
 			bc_dt, alu_xb_dt, shf_xb_dt, mul_xb_dt, rf_xb_dtx, rf_xb_dty,
