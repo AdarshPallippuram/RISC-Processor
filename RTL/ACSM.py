@@ -172,5 +172,5 @@ else:
     print("Compilation Error, bye bye!!")
 flmdfy("$system","test_core.v",cmnt,0,0)
 print("\n\nTime Analysis:\nStart time: {}\nStop Time: {}\nTime taken to execute the script: {}".format(startTime,datetime.now(),(datetime.now() - startTime)))
-os.system('pause')
+#os.system('pause')
 
