@@ -31,17 +31,17 @@ begin
 end
 initial begin
 	stallb_en=1;
-	forever begin
-		#9 stallb_en=0;
-		#32 stallb_en=1;
-	end
+	/*forever begin
+		#10 stallb_en=0;
+		#20 stallb_en=1;
+	end*/
 end
 
 always@(posedge clk or negedge reset) begin
 	if(!reset) begin
 		interrupt<=1'b0;
 		count<=3'b0;
-		timeout<=10'b0;
+		timeout<=12'b0;
 	end else begin
 		timeout<=timeout+1'b1;
 		rand<=$urandom_range(0,7);
@@ -60,7 +60,7 @@ end
 
 always@(*) begin
 
-	if( (core_obj.mem_obj.pm_ps_op[31:22]==10'b1) | (core_obj.ps_obj.ps_stcky[2]) | (timeout==10'h3ff) ) begin
+	if( (core_obj.mem_obj.pm_ps_op[31:22]==10'b1) | (core_obj.ps_obj.ps_stcky[2]) | (timeout==12'hfff) ) begin
 		for(i=0;i<100;i=i+1) begin
 			$write("/");	
 		end
@@ -76,7 +76,7 @@ always@(*) begin
 		end
 		$write("\n");
 		#50;
-		//////////////////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
+		//////////////////////////////////////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
 		#50;
 		$stop;
 	end
