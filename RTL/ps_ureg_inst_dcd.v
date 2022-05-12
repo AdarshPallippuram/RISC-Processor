@@ -1,7 +1,7 @@
-module ureg_add_dcdr(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
+module ureg_add_dcdr(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_dmiaddinst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
 
 input clk_dcd;
-input ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
+input ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_dmiaddinst,ps_urgtrnsinst,ps_dm_wrb;
 input[7:0] ps_ureg1_add,ps_ureg2_add;
 output ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en;
 output[3:0] ps_xb_dm_rd_add,ps_xb_dm_wrt_add;
