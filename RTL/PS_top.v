@@ -234,7 +234,7 @@ always @(*) begin
 
 	//Conditional decoding
 	opc_cnd= pm_ps_op[4:0];
-	cnd_en= pm_ps_op[31]&(~ps_dmiaddinst);
+	cnd_en= pm_ps_op[31]&(~(pm_ps_op[29:26]==4'b1110));
 	astat_bts= { shf_ps_sz, shf_ps_sv, mul_ps_mv, mul_ps_mn, alu_ps_ac, alu_ps_an, alu_ps_av, alu_ps_az };   		//ASTAT bits given to condition checking module
 	cnd_tru= ( cnd_stat | !pm_ps_op[31] ) & !ps_idle & !ps_stcky[2] & !ps_jmp & !ps_jmp_dly & !ps_rtrn & !ps_rtrn_dly;
 
@@ -277,6 +277,7 @@ always @(*) begin
 	else if(ps_dmiaddinst) begin
 		ps_dg_iadd = pm_ps_op[26:24];
 		ps_dg_madd = 3'b0;
+	end
 	else begin
 		ps_dg_iadd = pm_ps_op[12:10];
 		ps_dg_madd = pm_ps_op[9:7];
@@ -290,6 +291,7 @@ always @(*) begin
 	end
 	else if(ps_dmiaddinst) begin
 		ps_dm_wrb = pm_ps_op[31];
+	end
 	else begin
 		ps_dm_wrb = 1'b1;
 	end
