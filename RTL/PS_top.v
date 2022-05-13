@@ -24,8 +24,7 @@ output[15:0] ps_bc_immdt;
 output ps_dm_cslt,ps_dm_wrb;
 output ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy;
 output[2:0] ps_dg_iadd,ps_dg_madd;
-output[1:0] ps_bc_drr_slct;
-output[2:0] ps_bc_di_slct;
+output[1:0] ps_bc_drr_slct,ps_bc_di_slct;
 output[15:0] ps_bc_dt,ps_dg_immdt;
 
 
@@ -80,8 +79,7 @@ reg[3:0] ps_xb_wadd;
 //Used for bus connect
 reg[15:0] ps_bc_immdt,ps_bc_dt;
 
-wire[1:0] ps_bc_drr_slct;
-wire[2:0] ps_bc_di_slct;
+wire[1:0] ps_bc_drr_slct,ps_bc_di_slct;
 
 //Used for DAG
 reg ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy;
