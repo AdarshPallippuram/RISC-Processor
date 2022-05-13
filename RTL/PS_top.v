@@ -1,5 +1,5 @@
 //3 June
-module PS_top (clk_fetch,clk_dcd,clk_exe,clk_rf,rst,interrupt,stallb,shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_ps_az,alu_ps_compd,pm_ps_op,bc_dt,ps_pm_cslt,ps_pm_wrb,ps_pm_add,ps_cu_float,ps_alu_en,ps_mul_en,ps_shf_en,ps_alu_log,ps_mul_otreg,ps_alu_ci,ps_alu_sat,ps_alu_hc,ps_mul_cls,ps_mul_sc,ps_shf_cls,ps_alu_sc,ps_mul_dtsts,ps_xb_raddy,ps_xb_w_cuEn,ps_xb_wadd,ps_xb_raddx,ps_xb_w_bcEn,ps_dg_wrt_en,ps_dg_rd_add,ps_dg_wrt_add,ps_bc_immdt,ps_dm_cslt,ps_dm_wrb,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_iadd,ps_dg_madd,ps_bc_drr_slct,ps_bc_di_slct,ps_bc_dt,dg_ps_add);
+module PS_top (clk_fetch,clk_dcd,clk_exe,clk_rf,rst,interrupt,stallb,shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_ps_az,alu_ps_compd,pm_ps_op,bc_dt,ps_dmiaddinst,ps_pm_cslt,ps_pm_wrb,ps_pm_add,ps_cu_float,ps_alu_en,ps_mul_en,ps_shf_en,ps_alu_log,ps_mul_otreg,ps_alu_ci,ps_alu_sat,ps_alu_hc,ps_mul_cls,ps_mul_sc,ps_shf_cls,ps_alu_sc,ps_mul_dtsts,ps_xb_raddy,ps_xb_w_cuEn,ps_xb_wadd,ps_xb_raddx,ps_xb_w_bcEn,ps_dg_wrt_en,ps_dg_rd_add,ps_dg_wrt_add,ps_bc_immdt,ps_dm_cslt,ps_dm_wrb,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_iadd,ps_dg_madd,ps_bc_drr_slct,ps_bc_di_slct,ps_bc_dt,dg_ps_add,ps_dg_immdt);
 
 
 input clk_fetch,clk_dcd,clk_exe,clk_rf,rst,interrupt,stallb;
@@ -7,6 +7,7 @@ input shf_ps_sz,shf_ps_sv,mul_ps_mv,mul_ps_mn,alu_ps_ac,alu_ps_an,alu_ps_av,alu_
 input[31:0] pm_ps_op;
 input[15:0] bc_dt;
 input[15:0] dg_ps_add;
+output ps_dmiaddinst;
 output ps_pm_cslt,ps_pm_wrb;
 output [15:0] ps_pm_add;
 output ps_cu_float, ps_alu_en, ps_mul_en, ps_shf_en, ps_alu_log, ps_mul_otreg;
@@ -23,8 +24,9 @@ output[15:0] ps_bc_immdt;
 output ps_dm_cslt,ps_dm_wrb;
 output ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy;
 output[2:0] ps_dg_iadd,ps_dg_madd;
-output[1:0] ps_bc_drr_slct,ps_bc_di_slct;
-output[15:0] ps_bc_dt;
+output[1:0] ps_bc_drr_slct;
+output[2:0] ps_bc_di_slct;
+output[15:0] ps_bc_dt,ps_dg_immdt;
 
 
 //Internal Sginals
@@ -78,11 +80,13 @@ reg[3:0] ps_xb_wadd;
 //Used for bus connect
 reg[15:0] ps_bc_immdt,ps_bc_dt;
 
-wire[1:0] ps_bc_drr_slct,ps_bc_di_slct;
+wire[1:0] ps_bc_drr_slct;
+wire[2:0] ps_bc_di_slct;
 
 //Used for DAG
 reg ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy;
 reg[2:0] ps_dg_iadd,ps_dg_madd;
+reg[15:0] ps_dg_immdt;
 
 //Used for jump, call etc.
 reg[15:0] dg_ps_add_p,dg_ps_add_p2,ps_daddr_p;
@@ -100,7 +104,7 @@ cnd_dcdr cnd(cnd_en,opc_cnd,cnd_stat,astat_bts);
 ureg_add_dcdr urdcd(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_dmiaddinst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
 
 //Bus connect selection logic
-bc_slct_cntrl bsc(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dmimminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add[7:4],ps_ureg2_add[7:4],ps_bc_drr_slct,ps_bc_di_slct);
+bc_slct_cntrl bsc(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dmimminst,ps_dmiaddinst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add[7:4],ps_ureg2_add[7:4],ps_bc_drr_slct,ps_bc_di_slct);
 
 always @(negedge clk_fetch or negedge rst) begin
 	if(!rst) begin
@@ -236,7 +240,7 @@ always @(*) begin
 	opc_cnd= pm_ps_op[4:0];
 	cnd_en= pm_ps_op[31]&(~(pm_ps_op[29:26]==4'b1110));
 	astat_bts= { shf_ps_sz, shf_ps_sv, mul_ps_mv, mul_ps_mn, alu_ps_ac, alu_ps_an, alu_ps_av, alu_ps_az };   		//ASTAT bits given to condition checking module
-	cnd_tru= ( cnd_stat | !pm_ps_op[31] ) & !ps_idle & !ps_stcky[2] & !ps_jmp & !ps_jmp_dly & !ps_rtrn & !ps_rtrn_dly;
+	cnd_tru= ( cnd_stat | !cnd_en ) & !ps_idle & !ps_stcky[2] & !ps_jmp & !ps_jmp_dly & !ps_rtrn & !ps_rtrn_dly;
 
 	//Instruction Identification
 	if(!pm_ps_op[30] & !ps_idle & !ps_stcky[2] & !ps_jmp & !ps_jmp_dly & !ps_rtrn & !ps_rtrn_dly) begin
@@ -270,6 +274,7 @@ always @(*) begin
 	ps_dg_en= pm_ps_op[29] & cnd_tru;
 	ps_dg_dgsclt= pm_ps_op[28];
 	ps_dg_mdfy= pm_ps_op[28];
+	ps_dg_immdt=pm_ps_op[15:0];
 	if(ps_dmimminst) begin
 		ps_dg_iadd = pm_ps_op[18:16];
 		ps_dg_madd = pm_ps_op[21:19];
