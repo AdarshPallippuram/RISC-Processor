@@ -56,12 +56,12 @@ end
 
 endmodule
 
-module DAG_top(clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,dg_dm_add,dg_ps_add,ps_dg_iadd,ps_dg_madd,bc_dt,ps_dg_wrt_en,dg_bc_dt,ps_dg_wrt_add,ps_dg_rd_add);
+module DAG_top(clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dmiaddinst,dg_dm_add,dg_ps_add,ps_dg_iadd,ps_dg_madd,bc_dt,ps_dg_wrt_en,dg_bc_dt,ps_dg_wrt_add,ps_dg_rd_add,ps_dg_immdt);
 
-input clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dg_wrt_en;
+input clk_rf,ps_dg_en,ps_dg_dgsclt,ps_dg_mdfy,ps_dmiaddinst,ps_dg_wrt_en;
 input[2:0] ps_dg_iadd,ps_dg_madd;
 input[4:0] ps_dg_wrt_add,ps_dg_rd_add;
-input [15:0] bc_dt;
+input [15:0] bc_dt,ps_dg_immdt;
 output [15:0] dg_dm_add,dg_ps_add;
 output [15:0] dg_bc_dt;
 
@@ -177,15 +177,23 @@ always@(*) begin
 		if(ps_dg_en) begin
 			if(ps_dg_dgsclt) begin 
 				if(ps_dg_mdfy) begin
-					dg_ps_add=i[ps_dg_iadd+4'b1000]+m[ps_dg_madd+4'b1000];
+					if(ps_dmiaddinst) begin
+						dg_dm_add=i[ps_dg_iadd]+ps_dg_immdt;
+						dg_ps_add=16'b0;
+					end
+					else begin
+						dg_ps_add=i[ps_dg_iadd+4'b1000]+m[ps_dg_madd+4'b1000];
+						dg_dm_add=16'b0;
+					end
 				end else begin
 					dg_ps_add=i[ps_dg_iadd+4'b1000];
+					dg_dm_add=16'b0;
 				end
-				dg_dm_add=16'b0;
 			end else begin
 				if(ps_dg_mdfy) begin
 					dg_dm_add=i[ps_dg_iadd]+m[ps_dg_madd];
-				end else begin
+				end
+				else begin
 					dg_dm_add=i[ps_dg_iadd];
 				end
 				dg_ps_add=16'b0;
