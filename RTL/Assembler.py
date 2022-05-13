@@ -1,8 +1,8 @@
 # 24th may
 # -------------------------------------------------------------------------------------------------------------------------------------
 
-PM_LOCATE="C:\modeltech64_10.5\examples\ADI\pm_file.txt"                         # Provide path to PM file and instructions here
-INST_LOCATE="C:\modeltech64_10.5\examples\ADI\Test\\"
+PM_LOCATE="C:\\modeltech64_10.5\\examples\\ADI\\pm_file.txt"                         # Provide path to PM file and instructions here
+INST_LOCATE="C:\\modeltech64_10.5\\examples\\ADI\\Test\\Test\\"
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -216,6 +216,12 @@ def Primary(x):
             OpCode="ERROR"
         else:
             OpCode = OpCode[:6]+"11"+register(x.split("=")[0])+OpCode[16:]
+    elif(re.match("^DM[ ]?[(][ ]?I[0-7][ ]?,[ ]?M[0-7][ ]?[)][ ]?$",x.split("=")[0]) and re.match("^[ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?$",x.split("=")[-1])):
+        OpCode=OpCode[:2]+"10100000"+register(re.findall("M[0-7]",x.split("=")[0])[0])[5:]+register(re.findall("I[0-7]",x.split("=")[0])[0])[5:]+HextoBin(x.split("=")[-1])
+    elif(re.match("^DM[ ]?[(][ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?,[ ]?I[0-7][ ]?[)][ ]?$",x.split("=")[0])):
+        OpCode="10111"+register(re.findall("I[0-7]",x.split("=")[0])[0])[5:]+register(x.split("=")[-1])+HextoBin(re.findall("[(][ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?",x.split(",")[0])[0][1:])
+    elif(re.match("^DM[ ]?[(][ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?,[ ]?I[0-7][ ]?[)][ ]?$",x.split("=")[-1])):
+        OpCode=OpCode[0]+"0111"+register(re.findall("I[0-7]",x.split("=")[-1])[0])[5:]+register(x.split("=")[0])+HextoBin(re.findall("[(][ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?",x.split(",")[0])[0][1:])
     elif(re.match("^[ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?$",x.split("=")[-1])):
         temp=x.split("=")[0]
         if(("FADDR" in temp) or ("DADDR" in temp) or (re.match("^[ ]?PC[ ]?$",temp)) or ("STKY" in temp) or ("PCSTKP" in temp)):
