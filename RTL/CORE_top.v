@@ -113,10 +113,11 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 				);
 
 
-		wire[1:0] ps_bc_drr_slct, ps_bc_di_slct;
+		wire[1:0] ps_bc_drr_slct;
+		wire[2:0] ps_bc_di_slct;
 		wire[15:0] dg_bc_dt, ps_bc_dt, ps_bc_immdt;
 		wire[15:0] ps_bc_drr_dt;
-				
+		wire ps_dmiaddinst;		
 		BC_top  bc_obj
 			(
 				clk_dcd,
@@ -132,12 +133,13 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 		wire [2:0] ps_dg_iadd,ps_dg_madd;
 		wire [4:0] ps_dg_wrt_add,ps_dg_rd_add;
 		wire [PMA_SIZE-1:0] dg_ps_add;
+		wire [DMA_SIZE-1:0] ps_dg_immdt;
 		
 		DAG_top dag_obj
 			(
-				clk_rf, ps_dg_en, ps_dg_dgsclt, ps_dg_mdfy, 
+				clk_rf, ps_dg_en, ps_dg_dgsclt, ps_dg_mdfy, ps_dmiaddinst,
 				dg_dm_add, dg_ps_add, ps_dg_iadd, ps_dg_madd, bc_dt, ps_dg_wrt_en, 
-				dg_bc_dt, ps_dg_wrt_add, ps_dg_rd_add
+				dg_bc_dt, ps_dg_wrt_add, ps_dg_rd_add,ps_dg_immdt
 			);
 		//PS
 		PS_top ps_obj
@@ -155,6 +157,8 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 					
 					//bc_ps	
 					bc_dt,
+
+					ps_dmiaddinst,
 
 					//ps_pm	
 					ps_pm_cslt, ps_pm_wrb, ps_pm_add, 
@@ -184,7 +188,7 @@ module   core_top	#(parameter PMA_SIZE, PMD_SIZE, DMA_SIZE, DMD_SIZE, RF_DATASIZ
 					//ps_bc
 					ps_bc_drr_slct,	ps_bc_di_slct, ps_bc_dt,
 
-					dg_ps_add
+					dg_ps_add,ps_dg_immdt
 				);
 
 endmodule
