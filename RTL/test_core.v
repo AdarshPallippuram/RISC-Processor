@@ -76,7 +76,7 @@ always@(*) begin
 		end
 		$write("\n");
 		#50;
-		//////////////////////////////////////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
+		//////////////////////////////////////////$system("python C:\\modeltech64_10.5\\examples\\ADI\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
 		#50;
 		$stop;
 	end
