@@ -33,6 +33,7 @@ reg cnd_tru, ps_idle,ps_pcstck_pntr,ps_mode1;
 reg[15:0] ps_faddr,ps_daddr,ps_pc;
 reg[15:0] dg_ps_add_dly;
 reg[15:0] ps_astat;						//ASTAT work left -> compare
+reg[15:0] ps_lcntr,ps_curlcntr;
 reg[15:0] ps_pcstck;
 reg[2:0] ps_stcky;
 reg ps_pshstck_dly,ps_popstck_dly;
@@ -249,6 +250,7 @@ always @(*) begin
 		ps_dmiaddinst = (pm_ps_op[29:26]==4'b1110);			//DM with immediate address
 		ps_dminst= (pm_ps_op[29:26]==4'b1001) & cnd_tru;		//DM<->ureg inst
 		ps_urgtrnsinst= (pm_ps_op[29:26]==4'b0001) & cnd_tru;		//Between Ureg inst
+		ps_loop = (pm_ps_op[29:26]==4'b0010)
 	end else begin
 		ps_pshstck= 1'b0;
 		ps_popstck= 1'b0;
