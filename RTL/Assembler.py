@@ -216,6 +216,8 @@ def Primary(x):
             OpCode="ERROR"
         else:
             OpCode = OpCode[:6]+"11"+register(x.split("=")[0])+OpCode[16:]
+    elif(re.match("^LCNTR[ ]?=[ ]?[R,I,M][0-9]+[ ]?,[ ]?DO[ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?UNTIL LCE[ ]?$",x)):
+        OpCode=OpCode[:4]+"1000"+register(x.split("=")[-1].split(",")[0])+HextoBin(re.findall("[0-9,A-F][0-9,A-F]?[0-9,A-F]?[0-9,A-F]?",x.split(",")[-1])[1])
     elif(re.match("^DM[ ]?[(][ ]?I[0-7][ ]?,[ ]?M[0-7][ ]?[)][ ]?$",x.split("=")[0]) and re.match("^[ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?$",x.split("=")[-1])):
         OpCode=OpCode[:2]+"10100000"+register(re.findall("M[0-7]",x.split("=")[0])[0])[5:]+register(re.findall("I[0-7]",x.split("=")[0])[0])[5:]+HextoBin(x.split("=")[-1])
     elif(re.match("^DM[ ]?[(][ ]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[0-9,A-F]?[ ]?,[ ]?I[0-7][ ]?[)][ ]?$",x.split("=")[0])):
