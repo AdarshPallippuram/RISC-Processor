@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------------
 // ALU Module
 //---------------------------------------------------------------------------------------------
-module alu
+module alu   
             #(parameter RF_DATASIZE = 16)  
             (
                 // Universal signals
@@ -75,7 +75,7 @@ module alu
     begin
         if(~reset)
         begin
-            x  <= 16'h0000;
+            x  <= 16'h0001;
             y  <= 16'h0000;
         end
         else
@@ -220,7 +220,7 @@ module alu
                         sx = 0;
                         ex = 0;
                         diff = 0;
-                        temp_x = 0;
+                        temp_x = 1;
                         temp_y = 0;
                         tru_diff = 0;
                         temp_dt = 0;
@@ -230,7 +230,7 @@ module alu
                     begin
                         sx = 0;
                         ex = 0;
-                        temp_x = 0;
+                        temp_x = 1;
                         temp_y = 0;
                     end
                 endcase
@@ -247,8 +247,8 @@ module alu
                 temp_y = y;
             end
             a = (alu_sc2[1] & alu_sc1[1] & ~alu_sc1[0]) ? ~temp_x : temp_x;
-            b = alu_sc2[1] ? ((^alu_sc1[2:1] & ~alu_float) ? 16'hffff : (16'h0000 | (temp_y & {16{alu_sc2[0]}}))) : (alu_sc2[0] ? ~temp_y : temp_y);
-            c = ~alu_float ? (alu_sc1[0] ? ps_alu_ci : (^alu_sc2)) : 0;
+            b = alu_sc2[1] ? ((^alu_sc1[2:1] & ~alu_float) ? 16'hffff : (16'h0000 | (temp_y & {16{alu_sc2[0]}}))) : (alu_sc2[0] ? (~temp_y + 1 - alu_sc1[0]) : temp_y);
+            c = ~alu_float ? (alu_sc1[0] ? ps_alu_ci : (alu_sc2[1])) : 0;
         end
         else
         begin
@@ -256,7 +256,7 @@ module alu
             ey = 0;
             diff = 0;
             norm_ip = 0;
-            a = 0;
+            a = 1;
             b = 0;
             c = 0;
             tru_diff = 0;
@@ -272,8 +272,8 @@ module alu
     begin
         if(alu_hc == 2'b10)         //MIN, MAX, CLIP instructions
         begin
-            num_x = alu_float ? ((x[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : x[14:0]) : (x ^ {16{x[15]}} + x[15]);
-            num_y = alu_float ? ((y[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : y[14:0]) : (y ^ {16{y[15]}} + y[15]);
+            num_x = alu_float ? ((x[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : x[14:0]) : ((x ^ {16{x[15]}}) + x[15]);
+            num_y = alu_float ? ((y[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : y[14:0]) : ((y ^ {16{y[15]}}) + y[15]);
 
             if(num_x[14] ^ num_y[14])
                 temp_max = ~(num_x[14] & 1'b1);
@@ -356,7 +356,7 @@ module alu
                                 if(invld_x)
                                     alu_xb_dt = 16'hffff;
                                 else if(alu_ps_av)
-                                    alu_xb_dt = alu_sat ? ({16{&ex}} & 16'h7fff | {16{~(|ex)}} & 16'h8000) : ({16{&ex}} & 16'h7c00 | {16{~(|ex)}} & 16'hfc00);
+                                    alu_xb_dt = satEn ? ({16{&ex}} & 16'h7fff | {16{~(|ex)}} & 16'h8000) : ({16{&ex}} & 16'h7c00 | {16{~(|ex)}} & 16'hfc00);
                                 else
                                     alu_xb_dt = sum;
                             end
@@ -369,10 +369,10 @@ module alu
                         begin
                             alu_ps_av = ((sum > 29) | &ex) ? 1'b1 : 1'b0;
                             alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15);
-                            alu_ps_ai = invld_x | (~alu_sat & alu_ps_av);
+                            alu_ps_ai = invld_x | (~satEn & alu_ps_av);
                             if(invld_x)
                                 alu_xb_dt = 16'hffff;
-                            else if(alu_sat)
+                            else if(satEn)
                                 alu_xb_dt = alu_ps_av ? (sx ? 16'h8000 : 16'h7fff) : temp_dt;
                             else
                                 alu_xb_dt = alu_ps_av ? 16'hffff : temp_dt;
@@ -381,10 +381,10 @@ module alu
                         begin
                             alu_ps_av = ((sum > 29) | &ex) ? 1'b1 : 1'b0;
                             alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15);
-                            alu_ps_ai = invld_x | (~alu_sat & alu_ps_av);
+                            alu_ps_ai = invld_x | (~satEn & alu_ps_av);
                             if(invld_x)
                                 alu_xb_dt = 16'hffff;
-                            else if(alu_sat)
+                            else if(satEn)
                                 alu_xb_dt = alu_ps_av ? (sx ? 16'h8000 : 16'h7fff) : temp_dt;
                             else
                                 alu_xb_dt = alu_ps_av ? 16'hffff : temp_dt;
@@ -403,7 +403,7 @@ module alu
                     alu_ps_au = 1'b0;       //AU
                     alu_ps_av = (alu_sc1 == 3'b010) ? 1'b0 : (cout[RF_DATASIZE-1] ^ cout[RF_DATASIZE-2]);       //AV
                     alu_ps_ai = 1'b0;       //AI
-                    alu_xb_dt = (ps_alu_sat & alu_ps_av) ? (sum[15] ? 16'h7fff : 16'h8000): ((~alu_sc2[1] & alu_sc1[1]) ? (sum >>> 1) : sum);
+                    alu_xb_dt = (satEn & alu_ps_av) ? (sum[15] ? 16'h7fff : 16'h8000): ((~alu_sc2[1] & alu_sc1[1]) ? (sum >>> 1) : sum);
                 end
             end       
 
@@ -516,7 +516,7 @@ module alu
                         alu_ps_au = 1'b0;       //AU
                         alu_ps_ai = invld_x;    //Checking for NAN input
                         alu_ps_av = alu_float ? 1'b0 : ((x == 16'b1000_0000_0000_0000) ? 1'b1 : 1'b0);       //AV high only if x is highest negative fixed integer
-                        alu_xb_dt = alu_float ? {1'b0, x[RF_DATASIZE-2:0]} : ((alu_sat & alu_ps_av) ? 16'h7fff : (({16{x[RF_DATASIZE-1]}} ^ x) + x[RF_DATASIZE-1]));
+                        alu_xb_dt = alu_float ? {1'b0, x[RF_DATASIZE-2:0]} : ((satEn & alu_ps_av) ? 16'h7fff : (({16{x[RF_DATASIZE-1]}} ^ x) + x[RF_DATASIZE-1]));
                     end
                     3'b100:     //Fn = Fx COPYSIGN Fy
                     begin
@@ -623,9 +623,9 @@ module alu
     // Flags
     //---------------------------------------------------------------------------------------
     always@(*)
-    begin
+    begin 
         //AZ
-        alu_ps_az = (alu_float & ~(alu_sc1[0] & ~alu_sc2[0] & (^alu_sc1[2:1]))) ? (alu_xb_dt[14:0] == 15'h0): (alu_xb_dt == 16'h0);         //1st condition checks for float instr other than FIX, TRUNC, ABS Fx
+        alu_ps_az = (alu_float & ~(alu_sc1[0] & ~alu_sc2[0] & (^alu_sc1[2:1]))) ? (alu_xb_dt[14:0] == 15'h0): (alu_xb_dt == 16'h0000);         //1st condition checks for float instr other than FIX, TRUNC, ABS Fx
         
         //AN (reset for MANT instrucion)
         alu_ps_an = ({alu_hc,alu_sc1} == 5'b11_010) ? 1'b0 : alu_xb_dt[RF_DATASIZE-1];
@@ -638,7 +638,7 @@ module alu
     end
 
         //COMPR
-        assign alu_ps_compd = {alu_hc,alu_sc1,alu_sc2}==7'b0001001 & alu_en;
+        assign alu_ps_compd = alu_en & ({alu_hc,alu_sc1,alu_sc2} == 7'b00_010_01);
 
     //---------------------------------------------------------------------------------------
     // Adder

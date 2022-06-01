@@ -3,13 +3,13 @@ module mul_rnd
 		#(parameter SIZE=16)
 		(
 			input wire[SIZE*5/2-1:0] data_in,		//mul40_out_data
-			input wire ps_mul_rndPrdt, mul_trunc,
+			input wire ps_mul_rndPrdt, mul_trunc,mul_float,
 			output reg[SIZE*5/2-1:0] out		//rnd40_out
 		);
 	
 	always@(*)
 	begin
-		if(ps_mul_rndPrdt | ~mul_trunc)		//signal is from programmer directly. rndPrdt becomes true only during ps_mul_IbF=1 (Fractional case).
+		if(ps_mul_rndPrdt | (~mul_trunc&mul_float))		//signal is from programmer directly. rndPrdt becomes true only during ps_mul_IbF=1 (Fractional case).
 		begin
 			if(~data_in[SIZE-1])	
 				//truncate

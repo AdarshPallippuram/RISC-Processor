@@ -189,7 +189,7 @@ module multiplier
 		
 		wire[RF_DATASIZE*5/2-1:0] rnd40_out;
 
-		mul_rnd rnd1(mul40_out_data, mul_rndPrdt, mul_trunc & mul_float, rnd40_out);
+		mul_rnd rnd1(mul40_out_data, mul_rndPrdt, mul_trunc , mul_float, rnd40_out);
 		defparam rnd1.SIZE=RF_DATASIZE;
 		
 		

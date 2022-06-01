@@ -376,7 +376,7 @@ always @(*) begin
 		ps_bc_dt= {15'b0,ps_pshstck_dly};
 	else if( (ps_rd_add==5'b11110) & (ps_pshstck_dly | ps_popstck_dly) )
 		ps_bc_dt= {13'b0, (ps_stcky[1] & ps_pshstck_dly) ,ps_pshstck_dly, ps_popstck_dly};
-	else if( (ps_rd_add== 5'b11100) & (ps_cmpt_dly|ps_cmpt_dly2) ) begin
+	else if( (ps_rd_add== 5'b11100) & (ps_cmpt_dly) ) begin
 		if(alu_ps_compd)
 			ps_bc_dt= {  !alu_ps_an & !alu_ps_az, ps_astat[15:9] , shf_ps_sz, shf_ps_sv, mul_ps_mv, mul_ps_mn, alu_ps_ac, alu_ps_an, alu_ps_av, alu_ps_az };
 		else

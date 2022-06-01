@@ -86,7 +86,7 @@ end
 //Register File
 always @(*) begin
 			
-	wrt_en[0]= ps_alu_en & !bt_5t25[14];
+	wrt_en[0]= ps_alu_en & ~(~bt_5t25[18]&bt_5t25[12]&bt_5t25[14]);
 	wrt_en[1]= ps_mul_en & !bt_5t25[16];
 	wrt_en[2]= ps_shf_en;
 	

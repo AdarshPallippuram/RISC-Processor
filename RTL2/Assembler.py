@@ -3,7 +3,6 @@
 
 PM_LOCATE="C:\\modeltech64_10.5\\examples\\ADI\\pm_file.txt"                         # Provide path to PM file and instructions here
 INST_LOCATE="C:\\modeltech64_10.5\\examples\\ADI\\Test\\Test\\"
-
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 from os import system,name
@@ -38,16 +37,19 @@ def conditions(cond):
     return switch.get(cond,"EROR")
 def BinAdd(bnum1,bnum2):
     return (format(int(bnum1,2)+int(bnum2),'08b'))
-def RegAddr(reg):
+def RegAddr(reg):                                                  
     if(reg[1:].isnumeric()):
         num=int(reg[1:])
-    switch = {
+
+    switch = {                  # starting address
         'R':"00000000",
         'I':"00010000",
-        'M':"00100000"
+        'M':"00100000",
+        'F':"00000000"
     }
-    if(re.match("[R,I,M,L,B][0-9]+",reg) and num<16):
-        return BinAdd(switch.get(reg[0],"ERROR"),reg[1:])
+
+    if(re.match("[R,I,M,L,F,B][0-9]+",reg) and num<16):
+        return BinAdd(switch.get(reg[0],"ERROR"),reg[1:])   # starting address + reg number
     else:
         switch = {
             "FADDR":"01100000",
@@ -69,7 +71,7 @@ def RegAddr(reg):
             "IMASKP":"01111111"
         }
         return switch.get(reg,"0000EROR")
-def register(reg):
+def register(reg):    # clean and search for register
     reg = reg.upper()
     if(reg[0]==" "):
         reg=reg[1:]
@@ -101,40 +103,160 @@ def signed(x):
     return sign
 def compute(com):
     Comp_code=""
-    R=["0000","0000","0000"]
+    R=["0000","0000","0000"] 
+    fix_flt=["0","1"]                                                                     
     sign=signed(com.split(" ")[-1])
-    if(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?R[0-9]+[ ]?[+][ ]?CI[ ]?",com)):
-        Comp_code = "000000010"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?-[ ]?R[0-9]+[ ]?[+][ ]?CI[ ]*-[ ]?1[ ]?",com)):
-        Comp_code = "000000011"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000000000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?-[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000000001"
-    elif(re.match("COMP[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):
-        Comp_code = "000000101"
-    elif(re.match("R[0-9]+[ ]?=[ ]?MIN[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):
-        Comp_code = "000001001"
-    elif(re.match("R[0-9]+[ ]?=[ ]?MAX[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):
-        Comp_code = "000001011"
-    elif(re.match("R[0-9]+[ ]?=[ ]?-[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000010001"
-    elif(re.match("R[0-9]+[ ]?=[ ]?ABS[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000011001"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?AND[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000100000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?OR[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000100001"
-    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?XOR[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000100010"
-    elif(re.match("R[0-9]+[ ]?=[ ]?REG_AND[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000110000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?REG_OR[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000110001"
-    elif(re.match("R[0-9]+[ ]?=[ ]?NOT[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "000111000"
+
+    if(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?R[0-9]+[ ]?[+][ ]?CI[ ]?",com)):                # Rn = Rx + Ry + CI   
+        Comp_code = fix_flt[0]+"000000010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?-[ ]?R[0-9]+[ ]?[+][ ]?CI[ ]*-[ ]?1[ ]?",com)):      # Rn = Rx – Ry + CI – 1
+        Comp_code = fix_flt[0]+"000000011"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?R[0-9]+[ ]?",com)):                           # Rn=Rx+Ry
+        Comp_code = fix_flt[0]+"000000000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?-[ ]?R[0-9]+[ ]?",com)):                             # Rn=Rx-Ry
+        Comp_code = fix_flt[0]+"000000001"
+    elif(re.match("R[0-9]+[ ]?=[ ]?[(][ ]?R[0-9]+[ ]?[+][ ]?R[0-9]+[ ]?[)][ ]?[/][ ]?2[ ]?",com)): # Rn=(Rx+Ry)/2
+        Comp_code = fix_flt[0]+"000000100"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?1[ ]?", com)):                                # Rn=Rn+1 
+        Comp_code = fix_flt[0]+"000010000"    
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[-][ ]?1[ ]?", com)):                                # Rn=Rn-1 
+        Comp_code = fix_flt[0]+"000011001"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?CI[ ]?",com)):                                # Rn = Rx+CI   
+        Comp_code = fix_flt[0]+"000010010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[+][ ]?CI[ ]*-[ ]?1[ ]?",com)):                      # Rn = Rx + CI – 1
+        Comp_code = fix_flt[0]+"000011011"
+    elif(re.match("COMP[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):                       # COMP(Rx, Ry)
+        Comp_code = fix_flt[0]+"000000101"
+    elif(re.match("R[0-9]+[ ]?=[ ]?MIN[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):        # Rn = MIN(Rx, Ry)
+        Comp_code = fix_flt[0]+"001001001"
+    elif(re.match("R[0-9]+[ ]?=[ ]?MAX[ ]?[(][ ]?R[0-9]+[ ]?,[ ]?R[0-9]+[ ]?[)][ ]?",com)):        # Rn = MAX(Rx, Ry)
+        Comp_code = fix_flt[0]+"001001101"
+    elif(re.match("R[0-9]+[ ]?=[ ]?-[ ]?R[0-9]+[ ]?",com)):                                        # Rn = –Rx
+        Comp_code = fix_flt[0]+"000011100"
+    elif(re.match("R[0-9]+[ ]?=[ ]?CLIP[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                    # Rn = CLIP Rx BY Ry
+        Comp_code = fix_flt[0]+"001001011"
+    elif(re.match("R[0-9]+[ ]?=[ ]?FIX[ ]?F[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                    # Rn = FIX Fx BY Ry
+        Comp_code = fix_flt[1]+"000001010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?FIX[ ]?F[0-9]+[ ]?",com)):                                     # Rn = FIX Fx
+        Comp_code = fix_flt[1]+"000011010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?TRUNC[ ]?F[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                  # Rn = TRUNC Fx BY Ry
+        Comp_code = fix_flt[1]+"000000110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?TRUNC[ ]?F[0-9]+[ ]?",com)):                                   # Rn = TRUNC Fx
+        Comp_code = fix_flt[1]+"000010110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?FLOAT[ ]?F[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                  # Rn = FLOAT Rx BY Ry
+        Comp_code = fix_flt[1]+"000001110"
+    elif(re.match("F[0-9]+[ ]?=[ ]?FLOAT[ ]?R[0-9]+[ ]?",com)):                                   # Fn = FLOAT Rx
+        Comp_code = fix_flt[1]+"000011110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?LOGB[ ]?F[0-9]+[ ]?",com)):                                    # Rn = LOGB Fx
+        Comp_code = fix_flt[1]+"000010011"
+
+    elif(re.match("R[0-9]+[ ]?=[ ]?ABS[ ]?R[0-9]+[ ]?",com)):                                      # Rn = ABS Rx
+        Comp_code = fix_flt[0]+"001110110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?AND[ ]?R[0-9]+[ ]?",com)):                           # Rn = Rx AND Ry
+        Comp_code = fix_flt[0]+"000100000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?OR[ ]?R[0-9]+[ ]?",com)):                            # Rn = Rx OR Ry
+        Comp_code = fix_flt[0]+"000100010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?XOR[ ]?R[0-9]+[ ]?",com)):                           # Rn = Rx XOR Ry
+        Comp_code = fix_flt[0]+"000100100"
+    elif(re.match("R[0-9]+[ ]?=[ ]?REG_AND[ ]?R[0-9]+[ ]?",com)):                                  # Rn = REG_AND Rx 
+        Comp_code = fix_flt[0]+"000111000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?REG_OR[ ]?R[0-9]+[ ]?",com)):                                   # Rn = REG_OR Rx
+        Comp_code = fix_flt[0]+"000111010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?NOT[ ]?R[0-9]+[ ]?",com)):                                      # Rn = NOT Rx
+        Comp_code = fix_flt[0]+"000111110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?PASS[ ]?R[0-9]+[ ]?",com)):                                     # Rn = PASS Rx
+        Comp_code = fix_flt[0]+"001110010"
+    elif(re.match("R[0-9]+[ ]?=[ ]?MANT[ ]?F[0-9]+[ ]?",com)):                                     # Rn = MANT Fx
+        Comp_code = fix_flt[1]+"001110100"
+    
+
+    elif(re.match("R[0-9]+[ ]?=[ ]?MR[0,1,2][ ]?",com)):                                           # Rn = MR0/MR1/MR2
+        Comp_code = fix_flt[0]+"01000"+sign
+        if("MR0" in com):
+            R[2]="0000"
+        elif("MR1" in com):
+            R[2]="0001"
+        else:
+            R[2]="0010"
+
+    elif(re.match("R[0-9]+[ ]?=[ ]?SAT MR",com)):                                                  # Rn = SAT MR
+        Comp_code = fix_flt[0]+"01000"+sign
+        R[2]="0011"
+    elif(re.match("MR[0,1,2][ ]?=[ ]?R[0-9]+[ ]?",com)):                                           # MR0/MR1/MR2 = Rx
+        Comp_code = fix_flt[0]+"01001"+sign
+        if("MR0" in com):                                                                          
+            R[2]="0000"
+        elif("MR1" in com):                                                                        
+            R[2]="0001"
+        else:
+            R[2]="0010"
+    elif(re.match("MR[ ]?=[ ]?SAT MR",com)):                                                       # MR = SAT MR
+        Comp_code = fix_flt[0]+"01001"+sign
+        R[2]="0011"
+    elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):                           # Rn = Rx * Ry 
+        Comp_code = fix_flt[0]+"01010"+sign
+    elif(re.match("MR[ ]?=[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):                                # MR = Rx * Ry 
+        Comp_code = fix_flt[0]+"01011"+sign
+    elif(re.match("R[0-9]+[ ]?=[ ]?MR[ ]?[+][ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):              # Rn = MR + Rx * Ry
+        Comp_code = fix_flt[0]+"01100"+sign
+    elif(re.match("MR[ ]?=[ ]?MR[ ]?[+][ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):                   # MR = MR + Rx * Ry
+        Comp_code = fix_flt[0]+"01101"+sign
+    elif(re.match("R[0-9]+[ ]?=[ ]?MR[ ]?-[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):                # Rn = MR – Rx * Ry
+        Comp_code = fix_flt[0]+"01110"+sign
+    elif(re.match("MR[ ]?=[ ]?MR[ ]?-[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):                     # MR = MR – Rx * Ry
+        Comp_code = fix_flt[0]+"01111"+sign
+    elif(re.match("R[0-9]+[ ]?=[ ]?ASHIFT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                  # Rn = ASHIFT Rx BY Ry
+        Comp_code = fix_flt[0]+"100000000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?ROT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                     # Rn = ROT Rx BY RY
+        Comp_code = fix_flt[0]+"100001000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?LEFTZ[ ]?R[0-9]+[ ]?",com)):                                    # Rn = LEFTZ Rx
+        Comp_code = fix_flt[0]+"100010000"
+    elif(re.match("R[0-9]+[ ]?=[ ]?LEFTO[ ]?R[0-9]+[ ]?",com)):                                    # Rn = LEFTO Rx
+        Comp_code = fix_flt[0]+"100011000"
+
+    elif(re.match("F[0-9]+[ ]?=[ ]?F[0-9]+[ ]?[+][ ]?F[0-9]+[ ]?",com)):                                # Fn = Fx+Fy
+        Comp_code = fix_flt[1]+"000000000"
+    elif(re.match("F[0-9]+[ ]?=[ ]?F[0-9]+[ ]?[-][ ]?F[0-9]+[ ]?",com)):                                # Fn = Fx-Fy
+        Comp_code = fix_flt[1]+"000000001"
+    elif(re.match("F[0-9]+[ ]?=[ ]?ABS[ ]?[(][ ]?F[0-9]+[ ]?[+][ ]?F[0-9]+[ ]?[)][ ]?",com)):           # Fn = ABS(Fx+Fy)
+        Comp_code = fix_flt[1]+"000001000"
+    elif(re.match("F[0-9]+[ ]?=[ ]?ABS[ ]?[(][ ]?F[0-9]+[ ]?[-][ ]?F[0-9]+[ ]?[)][ ]?",com)):           # Fn = ABS(Fx-Fy)
+        Comp_code = fix_flt[1]+"000001001"
+    elif(re.match("F[0-9]+[ ]?=[ ]?[(][ ]?F[0-9]+[ ]?[+][ ]?F[0-9]+[ ]?[)][ ]?[/][ ]?2[ ]?",com)):      # Fn =(Fx+Fy)/2
+        Comp_code = fix_flt[1]+"000000100"
+    elif(re.match("COMP[ ]?[(][ ]?F[0-9]+[ ]?,[ ]?F[0-9]+[ ]?[)][ ]?",com)):                            # COMP(Fx,Fy)
+        Comp_code = fix_flt[1]+"000000101"
+    elif(re.match("F[0-9]+[ ]?=[ ]?SCALB[ ]?F[0-9]+[ ]?BY[ ]?F[0-9]+[ ]?",com)):                        # Fn = SCALB Fx BY Ry
+        Comp_code = fix_flt[1]+"000000010"
+    elif(re.match("F[0-9]+[ ]?=[ ]?CLIP[ ]?F[0-9]+[ ]?BY[ ]?F[0-9]+[ ]?",com)):                         # Fn = CLIP Fx BY Fy
+        Comp_code = fix_flt[1]+"001001011"
+    elif(re.match("F[0-9]+[ ]?=[ ]?MIN[ ]?[(][ ]?F[0-9]+[ ]?,[ ]?F[0-9]+[ ]?[)][ ]?",com)):             # Fn = MIN(Fx,Fy)
+        Comp_code = fix_flt[1]+"001001001"
+    elif(re.match("F[0-9]+[ ]?=[ ]?MAX[ ]?[(][ ]?F[0-9]+[ ]?,[ ]?F[0-9]+[ ]?[)][ ]?",com)):             # Fn = MAX(Fx,Fy)
+        Comp_code = fix_flt[1]+"001001101"
+    elif(re.match("R[0-9]+[ ]?=[ ]?FLOAT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                        # Rn = FLOAT Rx BY Ry
+        Comp_code = fix_flt[1]+"000001110"
+    elif(re.match("R[0-9]+[ ]?=[ ]?FIX[ ]?F[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):                          # Rn = FIX Fx By Ry
+        Comp_code = fix_flt[1]+"000001111"
+    elif(re.match("F[0-9]+[ ]?=[ ]?RND[ ]?F[0-9]+[ ]?",com)):                                           # Fn = RND Fx
+        Comp_code = fix_flt[1]+"000010000"
+    elif(re.match("F[0-9]+[ ]?=[ ]?PASS[ ]?F[0-9]+[ ]?",com)):                                           # Fn = PASS Fx
+        Comp_code = fix_flt[1]+"001110010"
+    elif(re.match("F[0-9]+[ ]?=[ ]?ABS[ ]?F[0-9]+[ ]?",com)):                                           # Fn = ABS Fx
+        Comp_code = fix_flt[1]+"001110110"
+    elif(re.match("F[0-9]+[ ]?=[ ]?F[0-9]+[ ]?COPYSIGN[ ]?F[0-9]+[ ]?",com)):                           # Fn = Fx COPYSIGN Fy
+        Comp_code = fix_flt[1]+"001101000"
+    elif(re.match("F[0-9]+[ ]?=[ ]?-[ ]?F[0-9]+[ ]?",com)):                                             # Fn = -Fx
+        Comp_code = fix_flt[1]+"001110000"
+    elif(re.match("F[0-9]+[ ]?=[ ]?F[0-9]+[ ]?[*][ ]?F[0-9]+[ ]?",com)):                                # Fn = Fx * Fy 
+        Comp_code = fix_flt[1]+"010100000"
+
+    # elif(re.match("R[0-9]+[ ]?=[ ]?REG_OR[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "000110001"
+    # elif(re.match("R[0-9]+[ ]?=[ ]?NOT[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "000111000"
     elif(re.match("R[0-9]+[ ]?=[ ]?MR[0,1,2][ ]?",com)):
-        Comp_code = "01000"+sign
+        Comp_code = fix_flt[0]+"01000"+sign
         if("MR0" in com):
             R[2]="0000"
         elif("MR1" in com):
@@ -142,10 +264,10 @@ def compute(com):
         else:
             R[2]="0010"
     elif(re.match("R[0-9]+[ ]?=[ ]?SAT MR",com)):
-        Comp_code = "01000"+sign
+        Comp_code = fix_flt[0]+"01000"+sign
         R[2]="0011"
     elif(re.match("MR[0,1,2][ ]?=[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01001"+sign
+        Comp_code = fix_flt[0]+"01001"+sign
         if("MR0" in com):
             R[2]="0000"
         elif("MR1" in com):
@@ -153,48 +275,57 @@ def compute(com):
         else:
             R[2]="0010"
     elif(re.match("MR[ ]?=[ ]?SAT MR",com)):
-        Comp_code = "01001"+sign
+        Comp_code = fix_flt[0]+"01001"+sign
         R[2]="0011"
     elif(re.match("R[0-9]+[ ]?=[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01010"+sign
+        Comp_code = fix_flt[0]+"01010"+sign
     elif(re.match("MR[ ]?=[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01011"+sign
+        Comp_code = fix_flt[0]+"01011"+sign
     elif(re.match("R[0-9]+[ ]?=[ ]?MR[ ]?[+][ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01100"+sign
+        Comp_code = fix_flt[0]+"01100"+sign
     elif(re.match("MR[ ]?=[ ]?MR[ ]?[+][ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01101"+sign
+        Comp_code = fix_flt[0]+"01101"+sign
     elif(re.match("R[0-9]+[ ]?=[ ]?MR[ ]?-[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01110"+sign
+        Comp_code = fix_flt[0]+"01110"+sign
     elif(re.match("MR[ ]?=[ ]?MR[ ]?-[ ]?R[0-9]+[ ]?[*][ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "01111"+sign
-    elif(re.match("R[0-9]+[ ]?=[ ]?ASHIFT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "100000000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?ROT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "100001000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?LEFTZ[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "100010000"
-    elif(re.match("R[0-9]+[ ]?=[ ]?LEFTO[ ]?R[0-9]+[ ]?",com)):
-        Comp_code = "100011000"
+        Comp_code = fix_flt[0]+"01111"+sign
+    elif(re.match("F[0-9]+[ ]?=[ ]?F[0-9]+[ ]?[*][ ]?F[0-9]+[ ]?",com)):
+        Comp_code = fix_flt[1]+"010100000"
+         
+    # elif(re.match("R[0-9]+[ ]?=[ ]?ASHIFT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "100000000"
+    # elif(re.match("R[0-9]+[ ]?=[ ]?ROT[ ]?R[0-9]+[ ]?BY[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "100001000"
+    # elif(re.match("R[0-9]+[ ]?=[ ]?LEFTZ[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "100010000"
+    # elif(re.match("R[0-9]+[ ]?=[ ]?LEFTO[ ]?R[0-9]+[ ]?",com)):
+    #     Comp_code = "100011000"
     else:
         Comp_code = "EROR"
-    reg=re.findall("R[0-9][0-9]?",com)
-    if(Comp_code!="000000101" and Comp_code!="01111"+sign and Comp_code!="01011"+sign and Comp_code!="01101"+sign and Comp_code!="EROR"):
+
+    reg=re.findall("[F,R][0-9][0-9]?",com)
+
+    if(Comp_code[1:]!="000000101" and Comp_code!="01111"+sign and Comp_code!="01011"+sign and Comp_code!="01101"+sign and Comp_code!="EROR"):
         for i in range(len(reg)):
             R[i]=register(reg[i])[4:]
     else:
         for i in range(len(reg)):
             R[i+1]=register(reg[i])[4:]
+    
     if(Comp_code=="01000"+sign):
         R[1]="0000"
     if(Comp_code=="01001"+sign):
         R[0]="0000"
+
     Comp_code = Comp_code+R[0]+R[1]+R[2]
+    
     if("EROR" in Comp_code):
         return "EROR"
     else:
         return Comp_code
 ur1="^[ ]?[A,C,D,F,I,L,M,P,S,U][A,C,M,O,R,S,T,U][A,D,I,K,N,R,S,T]?[A,D,E,L,S,T,Y]?[C,K,L,R,T,1,2]?[N,P,1,2]?[T]?[R]?[ ]?$"
 d="^[ ]?DM[ ]?[(][ ]?I[0-7][ ]?,[ ]?M[0-7][ ]?[)][ ]?$"
+
 def Primary(x):
     OpCode = "00000000000000000000000000000000"
     x=x.upper()
@@ -271,7 +402,7 @@ def Primary(x):
                 return "ERROR"
             OpCode=OpCode[0]+"01101"+OpCode[6:19]+register(re.findall("I[1,8,9][0-5]*",x)[0])[5:]+register(re.findall("M[1,8,9][0-5]*",x)[0])[5:]+"00"+conditions(condition)
         else:
-            OpCode=OpCode[0]+"10000"+compute(x)+conditions(condition)
+            OpCode=OpCode[0]+"1000"+compute(x)+conditions(condition)
     if("EROR" in OpCode):
         return "ERROR"
     else:
