@@ -1,0 +1,20 @@
+i0=0001
+m0=0001
+r7=FFFF
+PUSH PCSTK=r7
+m0=STKY
+r8=PCSTKP
+r9=POP PCSTK
+r10=r9+r8
+IF AC MODIFY(i0,m0)
+IF AV MODIFY(i0,m0)
+dm(0000,i0)=r8
+dm(0002,i0)=r9
+dm(0004,i0)=r10
+NOP
+finish
+
+.MEMCHECK
+0003   0001
+0005   ffff
+0007   0000

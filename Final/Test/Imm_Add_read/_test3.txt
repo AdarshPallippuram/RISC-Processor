@@ -1,0 +1,16 @@
+i3=0
+m3=2
+r3=dm(4,i3)
+dm(i3,m3)=r3
+dm(i3,m3)=r3
+r4=dm(2,i3)
+m4=A
+dm(i3,m4)=r4
+dm(0,i3)=i3
+finish
+
+.MEMCHECK
+0000   fffd
+0002   fffd
+0004   fffe
+000e   000e

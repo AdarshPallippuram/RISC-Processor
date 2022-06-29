@@ -1,0 +1,16 @@
+i1=0
+m1=2
+r9=dm(4,i1)
+dm(i1,m1)=r9
+dm(i1,m1)=r9
+r10=dm(2,i1)
+m1=A
+dm(i1,m1)=r10
+dm(0,i1)=i1
+finish
+
+.MEMCHECK
+0000   fffd
+0002   fffd
+0004   fffe
+000e   000e
